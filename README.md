@@ -6,9 +6,9 @@ My CV is kept in one **private** S3 bucket and served twice: by nginx on an EC2 
 
 | What | Address |
 |---|---|
-| EC2 site | `http://<EC2-PUBLIC-IP>` (TODO: fill in) |
-| Lambda site | `https://<FUNCTION-URL>.lambda-url.<region>.on.aws/` (TODO: fill in) |
-| S3 bucket | `cv-23l-3093` (private, only the two roles can read it) |
+| EC2 site | http://54.206.227.188/ |
+| Lambda site | https://ssewmyrg7lt7ihpgfc4wtuwu7a0apjwu.lambda-url.ap-southeast-2.on.aws/ |
+| S3 bucket | `cv-23l-3093` (private, only the two roles can read it), Region ap-southeast-2 |
 
 ## 1. Diagram
 
@@ -32,19 +32,32 @@ My CV is kept in one **private** S3 bucket and served twice: by nginx on an EC2 
 
 ## 2. Access denied when changing the bucket (from the EC2 instance)
 
-The commands were run on the instance (EC2 Instance Connect). The instance role only has `s3:GetObject` and `s3:ListBucket`.
+The commands were run on the instance over SSH. The instance role only has `s3:GetObject` and `s3:ListBucket`.
 
 ```
-TODO: paste the output of the delete and overwrite attempts here, for example:
-  aws s3 rm s3://cv-23l-3093/site/index.html
-  aws s3 cp /tmp/test.txt s3://cv-23l-3093/site/index.html
+[ec2-user@ip-172-31-43-214 ~]$ aws s3 rm s3://cv-23l-3093/site/index.html
+delete failed: s3://cv-23l-3093/site/index.html An error occurred (AccessDenied) when calling the DeleteObject operation: User: arn:aws:sts::501634099237:assumed-role/cv-ec2-role-23l-3093/i-0a7ebd5b57a92910d is not authorized to perform: s3:DeleteObject on resource: "arn:aws:s3:::cv-23l-3093/site/index.html" because no identity-based policy allows the s3:DeleteObject action
+[ec2-user@ip-172-31-43-214 ~]$ echo test > /tmp/t.txt
+[ec2-user@ip-172-31-43-214 ~]$ aws s3 cp /tmp/t.txt s3://cv-23l-3093/site/index.html
+upload failed: ../../tmp/t.txt to s3://cv-23l-3093/site/index.html An error occurred (AccessDenied) when calling the PutObject operation: User: arn:aws:sts::501634099237:assumed-role/cv-ec2-role-23l-3093/i-0a7ebd5b57a92910d is not authorized to perform: s3:PutObject on resource: "arn:aws:s3:::cv-23l-3093/site/index.html" because no identity-based policy allows the s3:PutObject action
 ```
 
 ## 3. Last 10 lines of /var/log/cv-sync.log
 
 ```
-TODO: paste the output of: tail -n 10 /var/log/cv-sync.log
+[ec2-user@ip-172-31-43-214 ~]$ sudo tail -n 10 /var/log/cv-sync.log
+2026-10-25T16:13:19Z sync OK (instance i-0a7ebd5b57a92910d)
+2026-10-25T16:15:29Z sync OK (instance i-0a7ebd5b57a92910d)
+2026-10-25T16:17:39Z sync OK (instance i-0a7ebd5b57a92910d)
+2026-10-25T16:19:49Z sync OK (instance i-0a7ebd5b57a92910d)
+2026-10-25T16:21:49Z sync OK (instance i-0a7ebd5b57a92910d)
+2026-10-25T16:23:49Z sync OK (instance i-0a7ebd5b57a92910d)
+2026-10-25T16:25:49Z sync OK (instance i-0a7ebd5b57a92910d)
+2026-10-25T16:27:49Z sync OK (instance i-0a7ebd5b57a92910d)
+2026-10-25T16:29:49Z sync OK (instance i-0a7ebd5b57a92910d)
+2026-10-25T16:31:49Z sync OK (instance i-0a7ebd5b57a92910d)
 ```
+The timer runs the sync every 2 minutes.
 
 ## 4. Answers
 
