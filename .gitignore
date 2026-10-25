@@ -1,0 +1,8 @@
+# never commit private keys, login details or build output
+*.pem
+*.key
+*.pub
+*.zip
+.env
+.aws/
+credentials
